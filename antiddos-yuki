@@ -289,6 +289,8 @@ accidental_start_prevention
 
 # Allow the local interface.
  "$IP" -A INPUT -i lo -s 127.0.0.0/8 -j ACCEPT
+ "$IP" -A INPUT -i lo -s 10.0.0.0/8 -j ACCEPT
+ "$IP" -A INPUT -i lo -s 185.125.190.0/24 -j ACCEPT
 
 # Allow established and related connections.
  "$IP" -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -424,12 +426,12 @@ done <"./blacklist"
 #################
 
 # Filtering by TCP options.
-# "$IP" -t raw -A PREROUTING -p tcp --tcp-option 1 -j DROP (NOP/RFC9293)
-# "$IP" -t raw -A PREROUTING -p tcp --tcp-option 3 -j DROP (WinScale/RFC7372)
-# "$IP" -t raw -A PREROUTING -p tcp --tcp-option 5 -j DROP (SACK/RFC2018)
-# "$IP" -t raw -A PREROUTING -p tcp --tcp-option 8 -j DROP (Timestamps/RFC7323)
-# "$IP" -t raw -A PREROUTING -p tcp --tcp-option 27 -j DROP (QuickStartResp/RFC7882)
-# "$IP" -t raw -A PREROUTING -p tcp --tcp-option 34 -j DROP (TFO Cookie)
+ "$IP" -t raw -A PREROUTING -p tcp --tcp-option 1 -j DROP (NOP/RFC9293)
+ "$IP" -t raw -A PREROUTING -p tcp --tcp-option 3 -j DROP (WinScale/RFC7372)
+ "$IP" -t raw -A PREROUTING -p tcp --tcp-option 5 -j DROP (SACK/RFC2018)
+ "$IP" -t raw -A PREROUTING -p tcp --tcp-option 8 -j DROP (Timestamps/RFC7323)
+ "$IP" -t raw -A PREROUTING -p tcp --tcp-option 27 -j DROP (QuickStartResp/RFC7882)
+ "$IP" -t raw -A PREROUTING -p tcp --tcp-option 34 -j DROP (TFO Cookie)
 
 # Filtering by ECN bits.
 # Note: These packets are also legitimate. (ece/cwr)
@@ -437,8 +439,8 @@ done <"./blacklist"
 # "$IP" -t raw -A PREROUTING -p tcp -m ecn --ecn-tcp-cwr -j DROP
 
 # Prevent SQL Injection attempts. These rules are need to be configured if you want to use them.
-# "$IP" -t raw -I PREROUTING -p tcp --dport 3306 -m string --string "union select" --algo bm -j DROP
-# "$IP" -t raw -I PREROUTING -p tcp --dport 3306 -m string --string "information_schema" --algo bm -j DROP
+ "$IP" -t raw -I PREROUTING -p tcp --dport 3306 -m string --string "union select" --algo bm -j DROP
+ "$IP" -t raw -I PREROUTING -p tcp --dport 3306 -m string --string "information_schema" --algo bm -j DROP
 
 # Block HTTP 1.1 packets received on non-HTTP port(s). (common attack pattern)
 # "$IP" -t raw -A PREROUTING -p tcp -m multiport --dports "$HTTP" -m string ! --string "HTTP/1.1 OK" --algo kmp -j DROP
@@ -461,12 +463,12 @@ done <"./blacklist"
 # "$IP" -t raw -A PREROUTING -p tcp --sport 80 -m string ! --string "HTTP" --algo kmp -j DROP
 
 # Patch some random attack.
-# "$IP" -t raw -A PReROUTING -p tcp --syn -m u32 --u32 "0>>22&0x3C@12>>26&0x3F=0" -j DROP
+ "$IP" -t raw -A PReROUTING -p tcp --syn -m u32 --u32 "0>>22&0x3C@12>>26&0x3F=0" -j DROP
 
 # SYN/ACK Reflection mitigation.
 # Optimization tip: comment the default rule that limits SYN-ACK when using these.
-# "$IP" -t mangle -A PREROUTING -p tcp --syn -m recent --name blacklist --set -j DROP
-# "$IP" -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,ACK -m recent --name blacklist --rcheck --seconds 60 --hitcount 10 -j DROP
+ "$IP" -t mangle -A PREROUTING -p tcp --syn -m recent --name blacklist --set -j DROP
+ "$IP" -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,ACK -m recent --name blacklist --rcheck --seconds 60 --hitcount 10 -j DROP
 
 # Drop ACK-PSH Packets that do not contain any data.
 # Shouldn't cause problems because these packets aren't legitimate.
