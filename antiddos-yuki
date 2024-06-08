@@ -285,7 +285,6 @@ accidental_start_prevention
 
 # Set default input policy to DROP.
 # Drop policy swiftly deals with any unwanted traffic.
- "$IP" -P INPUT DROP
 
 # Allow the local interface.
  "$IP" -A INPUT -i lo -s 127.0.0.0/8 -j ACCEPT
